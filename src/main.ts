@@ -1,24 +1,54 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import { fetchData } from "./libs/fetch.ts"
+import { Note } from "./types/entity.ts"
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+interface NoteList {
+  data : Note[];
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const API_URL = "https://v1.appbackend.io/v1/rows/efN4msPKOFyC";
+
+async function renderNotes() {
+  const notes = await fetchData<NodeList>(API_URL);
+
+  if (!notes){
+    console.log("Aplikasi error!");
+    return;
+  }
+  
+  notes.data.map((note) => {
+    const newNote = document.createElement("div");
+    const newTitleNote = document.createElement("h3");
+    const newContentNote = document.createElement("p");
+
+    newTitleNote.textContent = note.title;
+    newContentNote.textContent = note.content;
+
+    newNote.append(newTitleNote, newContentNote);
+    document.body.append(newNote);
+  });
+}
+
+const titleInput = document.getElementById("note-title") as HTMLInputElement;
+const contentInput = document.getElementById("note-content") as HTMLTextAreaElement;
+const submitBtn = document.getElementById("submitBtn");
+
+submitBtn?.addEventListener("click", async() => {
+  const title = titleInput.value;
+  const content = contentInput.value;
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([{ title, content}]),
+    });
+  } catch (error) {
+    console.log(error);
+  } finally {
+    window.location.reload();
+  }
+})
+
+renderNotes();
