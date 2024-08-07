@@ -1,40 +1,44 @@
-import { fetchData } from "./libs/fetch.ts"
-import { Note } from "./types/entity.ts"
+import { fetchData } from "./libs/fetch";
+import { Note } from "./types/entity";
 
-interface NoteList {
-  data : Note[];
+interface NoteResult {
+  data: Note[];
 }
 
 const API_URL = "https://v1.appbackend.io/v1/rows/efN4msPKOFyC";
 
-async function renderNotes() {
-  const notes = await fetchData<NodeList>(API_URL);
+const noteForm = document.getElementById('note-form') as HTMLFormElement;
+const noteTitle = document.getElementById('note-title') as HTMLInputElement;
+const noteContent = document.getElementById('note-content') as HTMLTextAreaElement;
+const notesList = document.getElementById('notes-list') as HTMLDivElement;
 
-  if (!notes){
+async function renderNotes() {
+  const notes = await fetchData<NoteResult>(API_URL);
+  
+  if (!notes) {
     console.log("Aplikasi error!");
     return;
   }
-  
-  notes.data.map((note) => {
-    const newNote = document.createElement("div");
-    const newTitleNote = document.createElement("h3");
-    const newContentNote = document.createElement("p");
 
-    newTitleNote.textContent = note.title;
-    newContentNote.textContent = note.content;
+  const noteTemplate = document.getElementById('note-template') as HTMLTemplateElement;
 
-    newNote.append(newTitleNote, newContentNote);
-    document.body.append(newNote);
+  notes.data.forEach((note) => {
+    const noteElement = noteTemplate.content.cloneNode(true) as HTMLElement;
+    const titleElement = noteElement.querySelector('.note-title') as HTMLHeadingElement;
+    const contentElement = noteElement.querySelector('.note-content') as HTMLParagraphElement;
+    const deleteButton = noteElement.querySelector('.delete-btn') as HTMLButtonElement;
+
+    titleElement.textContent = note.title;
+    contentElement.textContent = note.content;
+    deleteButton.dataset.id = note._id;
+
+    notesList.appendChild(noteElement);
   });
 }
 
-const titleInput = document.getElementById("note-title") as HTMLInputElement;
-const contentInput = document.getElementById("note-content") as HTMLTextAreaElement;
-const submitBtn = document.getElementById("submitBtn");
-
-submitBtn?.addEventListener("click", async() => {
-  const title = titleInput.value;
-  const content = contentInput.value;
+noteForm.addEventListener("submit", async () => {
+  const title = noteTitle.value;
+  const content = noteContent.value;
 
   try {
     await fetch(API_URL, {
@@ -42,13 +46,38 @@ submitBtn?.addEventListener("click", async() => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([{ title, content}]),
+      body: JSON.stringify([{ title, content }]),
     });
   } catch (error) {
     console.log(error);
   } finally {
     window.location.reload();
   }
-})
+});
 
+notesList.addEventListener('click', async (e) => {
+  const target = e.target as HTMLElement;
+  if (target.classList.contains('delete-btn')) {
+    const noteId = target.getAttribute('data-id');
+    console.log(`Note dengan ID ${noteId}`);
+    if (noteId) {
+      try {
+        await fetch(API_URL, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([noteId]),
+        });
+
+      } catch (error) {
+        console.log(error);
+      } finally {
+        window.location.reload();
+      }
+    }
+  }
+});
+
+// Initial render
 renderNotes();
