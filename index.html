@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes App</title>
-  <link rel="stylesheet" href="/src/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <link rel="stylesheet" href="/src/styles.css">
 </head>
 <body>
-  <div id="app">
-    <h1>Notes App</h1>
-    <form id="note-form">
-      <input type="text" id="note-title" placeholder="Title" required>
-      <textarea id="note-content" placeholder="Content" required></textarea>
-      <button type="submit" id="submitBtn">Add Note</button>
-    </form>
-  </div>
-  <div>
-    <h2>Note Lists</h2>
-    <div id="notes-list" class="notes-container"></div>
-  </div>
-  <script type="module" src="/src/main.ts"></script>
+    <div id="app">
+        <h1>Notes App</h1>
+        <form id="note-form">
+            <input type="text" id="note-title" placeholder="Title" required>
+            <textarea id="note-content" placeholder="Content" required></textarea>
+            <button type="submit">Add Note</button>
+        </form>
+        <div id="notes-list"></div>
+    </div>
+
+    <!-- Template for individual note -->
+    <template id="note-template">
+        <div class="note">
+            <h3 class="note-title"></h3>
+            <p class="note-content"></p>
+            <button class="delete-btn" data-id="">Delete</button>
+        </div>
+    </template>
+
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
